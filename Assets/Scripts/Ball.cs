@@ -13,7 +13,6 @@ public class Ball : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
-        Debug.Log($"{rb.linearVelocity}\n{rb.angularVelocity}\n{rb.linearDamping}\n{rb.angularDamping}");
     }
 
     private void Update()
@@ -32,6 +31,15 @@ public class Ball : MonoBehaviour
             return;
 
         var hit = other.contacts[0];
-        rb.linearVelocity = Vector3.Reflect(-other.relativeVelocity, hit.normal);
+        
+        var newVelocity = Vector3.Reflect(-other.relativeVelocity, hit.normal);
+        if (other.gameObject.CompareTag("Wall"))
+        {
+            rb.linearVelocity = newVelocity;
+        }
+        else
+        {
+            rb.linearVelocity += newVelocity * 0.6f;
+        }
     }
 }
