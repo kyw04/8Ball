@@ -5,10 +5,7 @@ using Random = UnityEngine.Random;
 
 public class Ball : MonoBehaviour
 {
-    public float speed;
-    
     private Rigidbody rb;
-    public Vector3 direction;
     
     private void Start()
     {
@@ -17,14 +14,19 @@ public class Ball : MonoBehaviour
 
     private void Update()
     {
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
+        if (Mouse.current.leftButton.isPressed)
         {
-            rb.AddForce(direction * speed, ForceMode.Impulse);
-            // Debug.Log(rb.linearVelocity);
+            
         }
-        
     }
+    
+    
 
+    public void Hitting(Vector3 dir, float power)
+    {
+        rb.AddForce(dir * power, ForceMode.Impulse);
+    }
+    
     private void OnCollisionEnter(Collision other)
     {
         if (other.gameObject.CompareTag("Floor"))
