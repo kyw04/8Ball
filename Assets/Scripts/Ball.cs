@@ -1,7 +1,4 @@
-using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using Random = UnityEngine.Random;
 
 public class Ball : MonoBehaviour
 {
@@ -11,16 +8,6 @@ public class Ball : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
     }
-
-    private void Update()
-    {
-        if (Mouse.current.leftButton.isPressed)
-        {
-            
-        }
-    }
-    
-    
 
     public void Hitting(Vector3 dir, float power)
     {
