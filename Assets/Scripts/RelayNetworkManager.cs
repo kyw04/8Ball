@@ -20,6 +20,7 @@ public class RelayNetworkManager : MonoBehaviour
     [SerializeField] private Button joinButton;
     [SerializeField] private Button leaveButton;
     public int maxConnections;
+    public string targetSceneName = "InGameScene";
 
     private NetworkManager _networkManager;
     private UnityTransport _transport;
@@ -53,7 +54,7 @@ public class RelayNetworkManager : MonoBehaviour
         if (!_servicesReady) return;
 
         try
-        {
+        {            
             var allocation = await RelayService.Instance.CreateAllocationAsync(maxConnections);
             var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
@@ -63,6 +64,9 @@ public class RelayNetworkManager : MonoBehaviour
                 throw new Exception("StartHost Failed");
 
             if (joinCodeText) joinCodeText.text = joinCode;
+            Debug.Log("Join Code: " + joinCode);
+            
+            ChangeToGameScene();
         }
         catch (Exception e)
         {
@@ -70,6 +74,11 @@ public class RelayNetworkManager : MonoBehaviour
         }
     }
 
+    private void ChangeToGameScene()
+    {
+        NetworkManager.Singleton.SceneManager.LoadScene(targetSceneName, LoadSceneMode.Single);
+    }
+    
     private async void JoinByCode()
     {
         if (!_servicesReady) await EnsureServicesReadyAsync();
@@ -92,7 +101,6 @@ public class RelayNetworkManager : MonoBehaviour
                 throw new Exception("StartClient Failed");
 
             Debug.Log("Client trying to connect...");
-            SceneManager.LoadScene(1);
         }
         catch (Exception e)
         {

@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Unity.Netcode;
 
-public class CueStick : MonoBehaviour
+public class CueStick : NetworkBehaviour
 {
     public Image powerUI;
     public Ball target;
@@ -15,13 +16,25 @@ public class CueStick : MonoBehaviour
 
     private void Start()
     {
+        transform.position = target.transform.position;
         _mouse = Mouse.current;
     }
-
+    
     private void Update()
     {
+        if (!IsOwner)
+        {
+            if (_mouse.leftButton.isPressed)
+            {
+                Debug.Log("ChangeOwnership");
+                RequestOwnershipServerRpc();
+            }
+        }
+
         if (_mouse.leftButton.isPressed)
         {
+            Debug.Log("Mouse Left");
+            
             transform.position = target.transform.position;
             StickRotation();
         }
@@ -30,13 +43,21 @@ public class CueStick : MonoBehaviour
         {
             float value = _mouse.scroll.magnitude;
             hittingPower = Mathf.Clamp(hittingPower + value, 0, maxPower);
-            powerUI.fillAmount = hittingPower / maxPower;
+            
+            if (powerUI)
+                powerUI.fillAmount = hittingPower / maxPower;
         }
         
         if (_mouse.rightButton.wasPressedThisFrame)
         {
             target.Hitting(stick.forward, hittingPower);
         }
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    private void RequestOwnershipServerRpc(ServerRpcParams serverRpcParams = default)
+    {
+        NetworkObject.ChangeOwnership(serverRpcParams.Receive.SenderClientId);
     }
     
     private void StickRotation()

@@ -2241,6 +2241,7 @@ MonoBehaviour:
   joinButton: {fileID: 1386438297}
   leaveButton: {fileID: 1885525148}
   maxConnections: 3
+  targetSceneName: InGameScene
 --- !u!114 &2050713904
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2287,7 +2288,7 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 2050713904}
-    PlayerPrefab: {fileID: 3088209498583530854, guid: 0bb8e72aca18e314ab30d24850d44da7, type: 3}
+    PlayerPrefab: {fileID: 7996080317668663117, guid: 074ca60f968d5466a806c17864252fdb, type: 3}
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 9f92c8c32184ea2418b25ba5e9069b1c, type: 2}
