@@ -8,7 +8,6 @@ public class CueStick : MonoBehaviour
     public Ball target;
     public Transform stick;
     
-    public float rotationSpeed;
     public float hittingPower;
     public float maxPower;
 
@@ -24,9 +23,7 @@ public class CueStick : MonoBehaviour
         if (_mouse.leftButton.isPressed)
         {
             transform.position = target.transform.position;
-            Vector2 mouseDelta = -Mouse.current.delta.value;
-            float rot = Mathf.Abs(mouseDelta.x) > Mathf.Abs(mouseDelta.y) ? mouseDelta.x : mouseDelta.y;
-            stick.Rotate(new Vector3(0, rot * rotationSpeed, 0));
+            StickRotation();
         }
 
         if (_mouse.scroll.magnitude > 0)
@@ -41,4 +38,19 @@ public class CueStick : MonoBehaviour
             target.Hitting(stick.forward, hittingPower);
         }
     }
+    
+    private void StickRotation()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(_mouse.position.ReadValue());
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            Vector3 pos = transform.position;
+            Vector3 worldPoint = hit.point;
+            worldPoint.y = stick.position.y;
+            Vector3 lookDir = pos - (worldPoint - pos).normalized;
+            
+            stick.LookAt(lookDir);
+        }
+    }
+        
 }

@@ -167,6 +167,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cec9e07374a9e2469a33f18eef4bed1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CueStick
+  powerUI: {fileID: 0}
   target: {fileID: 0}
   stick: {fileID: 5023502829602750443}
-  rotationSpeed: 0.5
+  hittingPower: 0
+  maxPower: 100
