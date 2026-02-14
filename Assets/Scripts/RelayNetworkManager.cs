@@ -104,7 +104,7 @@ public class RelayNetworkManager : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError($"Client 접속 실패: {e.Message}");
+            Debug.LogError($"Client Connect Failed: {e.Message}");
         }
     }
 

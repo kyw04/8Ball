@@ -23,18 +23,10 @@ public class CueStick : NetworkBehaviour
     private void Update()
     {
         if (!IsOwner)
-        {
-            if (_mouse.leftButton.isPressed)
-            {
-                Debug.Log("ChangeOwnership");
-                RequestOwnershipServerRpc();
-            }
-        }
+            return;
 
         if (_mouse.leftButton.isPressed)
         {
-            Debug.Log("Mouse Left");
-            
             transform.position = target.transform.position;
             StickRotation();
         }
@@ -51,13 +43,8 @@ public class CueStick : NetworkBehaviour
         if (_mouse.rightButton.wasPressedThisFrame)
         {
             target.Hitting(stick.forward, hittingPower);
+            GameManager.instance.EndTurn();
         }
-    }
-    
-    [ServerRpc(RequireOwnership = false)]
-    private void RequestOwnershipServerRpc(ServerRpcParams serverRpcParams = default)
-    {
-        NetworkObject.ChangeOwnership(serverRpcParams.Receive.SenderClientId);
     }
     
     private void StickRotation()
