@@ -16,7 +16,6 @@ public class CueStick : NetworkBehaviour
 
     private void Start()
     {
-        transform.position = target.transform.position;
         _mouse = Mouse.current;
     }
     
@@ -42,7 +41,7 @@ public class CueStick : NetworkBehaviour
         
         if (_mouse.rightButton.wasPressedThisFrame)
         {
-            target.Hitting(stick.forward, hittingPower);
+            target.Hit(stick.forward, hittingPower);
             GameManager.instance.EndTurn();
         }
     }

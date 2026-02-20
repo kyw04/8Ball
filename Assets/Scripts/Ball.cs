@@ -1,15 +1,28 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class Ball : MonoBehaviour
+public class Ball : NetworkBehaviour
 {
-    private Rigidbody rb;
+    [SerializeField, Range(0, 15)]
+    public int index;
+
+    public Rigidbody rb { get; private set; }
     
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
     }
 
-    public void Hitting(Vector3 dir, float power)
+    private void FixedUpdate()
+    {
+        if (rb.linearVelocity.magnitude <= 0.1f)
+        {
+            rb.linearVelocity = Vector3.zero;
+            GameManager.instance.RemoveMoveBall(index);
+        }
+    }
+
+    public void Hit(Vector3 dir, float power)
     {
         rb.AddForce(dir * power, ForceMode.Impulse);
     }
@@ -18,7 +31,8 @@ public class Ball : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Floor"))
             return;
-
+        GameManager.instance.AddMoveBall(index);
+        
         var hit = other.contacts[0];
         
         var newVelocity = Vector3.Reflect(-other.relativeVelocity, hit.normal);
@@ -26,7 +40,7 @@ public class Ball : MonoBehaviour
         {
             rb.linearVelocity = newVelocity;
         }
-        else
+        else // ball
         {
             rb.linearVelocity += newVelocity * 0.6f;
         }
