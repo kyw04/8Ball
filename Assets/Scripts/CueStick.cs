@@ -30,14 +30,7 @@ public class CueStick : NetworkBehaviour
             StickRotation();
         }
 
-        if (_mouse.scroll.magnitude > 0)
-        {
-            float value = _mouse.scroll.magnitude;
-            hittingPower = Mathf.Clamp(hittingPower + value, 0, maxPower);
-            
-            if (powerUI)
-                powerUI.fillAmount = hittingPower / maxPower;
-        }
+        StickPowerUpdater();
         
         if (_mouse.rightButton.wasPressedThisFrame)
         {
@@ -59,5 +52,15 @@ public class CueStick : NetworkBehaviour
             stick.LookAt(lookDir);
         }
     }
+
+    private void StickPowerUpdater()
+    {
+        if (_mouse.scroll.magnitude <= 0)
+            return;
         
+        float value = _mouse.scroll.value.y;
+        hittingPower = Mathf.Clamp(hittingPower + value, 0, maxPower);
+        
+        if (powerUI) powerUI.fillAmount = hittingPower / maxPower;
+    }
 }
