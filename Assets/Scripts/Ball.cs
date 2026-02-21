@@ -32,7 +32,10 @@ public class Ball : NetworkBehaviour
         Vector3 w = rb.angularVelocity;
 
         if (v.sqrMagnitude < 0.000001f && w.sqrMagnitude < 0.000001f)
+        {
+            GameManager.instance.RemoveMoveBall(index);
             return;
+        }
 
         Vector3 n = Vector3.up;
         Vector3 r = -n * radius; // 중심 -> 접점 벡터
@@ -78,7 +81,7 @@ public class Ball : NetworkBehaviour
         }
 
         // 아주 느려지면 깔끔하게 정지 처리 (잔떨림 방지)
-        if (rb.linearVelocity.magnitude < 0.03f && rb.angularVelocity.magnitude < 0.5f)
+        if (rb.linearVelocity.magnitude < 0.3f && rb.angularVelocity.magnitude < 0.5f)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;

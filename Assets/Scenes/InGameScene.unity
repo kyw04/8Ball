@@ -247,14 +247,6 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5023502829602750443, guid: bdebd38641596ed42bcab988c5b0597d, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5023502829602750443, guid: bdebd38641596ed42bcab988c5b0597d, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5023502829602750443, guid: bdebd38641596ed42bcab988c5b0597d, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.85851973
       objectReference: {fileID: 0}
@@ -273,10 +265,6 @@ PrefabInstance:
     - target: {fileID: 5023502829602750443, guid: bdebd38641596ed42bcab988c5b0597d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: -61.698
-      objectReference: {fileID: 0}
-    - target: {fileID: 7003025382598583998, guid: bdebd38641596ed42bcab988c5b0597d, type: 3}
-      propertyPath: target
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7003025382598583998, guid: bdebd38641596ed42bcab988c5b0597d, type: 3}
       propertyPath: powerUI

@@ -1,0 +1,54 @@
+# pool_cue_3d_model_fixed.mtl
+newmtl tip_leather
+Ka 0.05 0.05 0.08
+Kd 0.15 0.28 0.55
+Ks 0.10 0.10 0.15
+Ns 80
+
+newmtl ferrule
+Ka 0.18 0.17 0.14
+Kd 0.92 0.90 0.82
+Ks 0.20 0.20 0.18
+Ns 120
+
+newmtl shaft
+Ka 0.20 0.16 0.08
+Kd 0.90 0.76 0.42
+Ks 0.18 0.16 0.10
+Ns 50
+
+newmtl butt_wood
+Ka 0.12 0.05 0.02
+Kd 0.38 0.16 0.07
+Ks 0.30 0.22 0.18
+Ns 150
+
+newmtl joint_ring_black
+Ka 0.02 0.02 0.02
+Kd 0.08 0.08 0.08
+Ks 0.35 0.35 0.35
+Ns 220
+
+newmtl joint_ring_gold
+Ka 0.18 0.14 0.05
+Kd 0.76 0.60 0.18
+Ks 0.60 0.50 0.20
+Ns 220
+
+newmtl ring_black
+Ka 0.02 0.02 0.02
+Kd 0.08 0.08 0.08
+Ks 0.35 0.35 0.35
+Ns 220
+
+newmtl ring_gold
+Ka 0.18 0.14 0.05
+Kd 0.80 0.62 0.20
+Ks 0.65 0.55 0.25
+Ns 240
+
+newmtl butt_cap
+Ka 0.02 0.02 0.02
+Kd 0.06 0.06 0.06
+Ks 0.45 0.45 0.45
+Ns 260
