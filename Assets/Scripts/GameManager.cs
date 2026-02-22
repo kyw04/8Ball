@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using Unity.Burst.Intrinsics;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -10,6 +12,9 @@ public class GameManager : NetworkBehaviour
     public CueStick cueStick;
     public Ball ballPrefab;
     public Material[] materials;
+    public Transform[] startPoints;
+    public Transform whiteBallPoint;
+    public Transform blackBallPoint;
     
     public NetworkVariable<int> Turn = new NetworkVariable<int>(0);
     
@@ -24,23 +29,38 @@ public class GameManager : NetworkBehaviour
 
         if (IsServer)
         {
-            for (int i = 0; i < 16; i++)
-            {
-                Ball ball = Instantiate(ballPrefab, new Vector3(Random.Range(-20f, 20f), 0.5f, Random.Range(-10, 10)), Quaternion.identity);
-                ball.index = i;
-                MeshRenderer meshRenderer = ball.GetComponentInChildren<MeshRenderer>();
-                meshRenderer.material = materials[i];
-                NetworkObject netObj = ball.GetComponent<NetworkObject>();
-                netObj.Spawn();
+            startBall = CreateBall(0, whiteBallPoint);
+            CreateBall(8, blackBallPoint);
             
-                if (i == 0)
-                    startBall = ball;
+            List<Transform> positions = new List<Transform>(startPoints);
+            for (int i = 0; i < startPoints.Length; i++)
+            {
+                int posIdx = Random.Range(0, positions.Count);
+                int idx = i + 1;
+                if (idx == 8)  idx = 15;
+                
+                CreateBall(idx, positions[posIdx]);
+                positions.RemoveAt(posIdx);
             }
         }
         
         moveBalls = 0;
         cueStick.target = startBall;
         cueStick.StickOnOff(true);
+    }
+
+    private Ball CreateBall(int index, Transform parent)
+    {
+        Ball ball = Instantiate(ballPrefab, parent.position, parent.rotation);
+        ball.transform.position += new Vector3(Random.Range(-0.01f, 0.01f), 0, Random.Range(-0.01f, 0.01f));
+        
+        ball.index = index;
+        MeshRenderer meshRenderer = ball.GetComponentInChildren<MeshRenderer>();
+        meshRenderer.material = materials[index];
+        NetworkObject netObj = ball.GetComponent<NetworkObject>();
+        netObj.Spawn();
+
+        return ball;
     }
     
     private void Update()
@@ -67,6 +87,13 @@ public class GameManager : NetworkBehaviour
 
     private void NextTurn()
     {
+        if (startBall.isGoal)
+        {
+            startBall.isGoal = false;
+            startBall.gameObject.SetActive(true);
+            startBall.transform.position = whiteBallPoint.position;
+        }
+        
         cueStick.StickOnOff(true);
         NextTurnServerRpc();
     }

@@ -5,7 +5,8 @@ public class Ball : NetworkBehaviour
 {
     [SerializeField, Range(0, 15)]
     public int index;
-
+    public bool isGoal;
+    
     public float radius;
     
     public float slideFrictionMu = 0.20f;   // 미끄럼 마찰 계수(튜닝)
@@ -110,13 +111,21 @@ public class Ball : NetworkBehaviour
         var hit = other.contacts[0];
         
         var newVelocity = Vector3.Reflect(-other.relativeVelocity, hit.normal);
+        
         if (other.gameObject.CompareTag("Wall"))
         {
-            rb.linearVelocity = newVelocity;
+            rb.linearVelocity = newVelocity * 0.95f;
         }
-        else // ball
+        if (other.gameObject.CompareTag("Ball"))
         {
-            rb.linearVelocity += newVelocity * 0.6f;
+            rb.linearVelocity += newVelocity * 0.44f;
+        }
+        if (other.gameObject.CompareTag("Goal"))
+        {
+            GameManager.instance.RemoveMoveBall(index);
+            rb.Sleep();
+            isGoal = true;
+            gameObject.SetActive(false);
         }
     }
 
