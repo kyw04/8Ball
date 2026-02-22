@@ -9,6 +9,7 @@ public class GameManager : NetworkBehaviour
 
     public CueStick cueStick;
     public Ball ballPrefab;
+    public Material[] materials;
     
     public NetworkVariable<int> Turn = new NetworkVariable<int>(0);
     
@@ -27,6 +28,8 @@ public class GameManager : NetworkBehaviour
             {
                 Ball ball = Instantiate(ballPrefab, new Vector3(Random.Range(-20f, 20f), 0.5f, Random.Range(-10, 10)), Quaternion.identity);
                 ball.index = i;
+                MeshRenderer meshRenderer = ball.GetComponentInChildren<MeshRenderer>();
+                meshRenderer.material = materials[i];
                 NetworkObject netObj = ball.GetComponent<NetworkObject>();
                 netObj.Spawn();
             
