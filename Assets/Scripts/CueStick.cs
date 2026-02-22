@@ -26,7 +26,6 @@ public class CueStick : NetworkBehaviour
 
         if (_mouse.leftButton.isPressed)
         {
-            transform.position = target.transform.position;
             StickRotation();
         }
 
@@ -34,9 +33,25 @@ public class CueStick : NetworkBehaviour
         
         if (_mouse.rightButton.wasPressedThisFrame)
         {
-            target.Hit(stick.forward, hittingPower);
+            StrikeCueBall(target.rb, stick.forward, hittingPower,  Vector3.zero);
+            target.NotifyShot();
             GameManager.instance.EndTurn();
         }
+    }
+
+    public void StickOnOff(bool value)
+    {
+        transform.position = target.transform.position;
+        gameObject.SetActive(value);
+    }
+    
+    private void StrikeCueBall(Rigidbody rb, Vector3 cueDir, float impulse, Vector3 hitOffsetLocal)
+    {
+        Vector3 dir = cueDir.normalized;
+        Vector3 hitPointWorld = rb.transform.TransformPoint(hitOffsetLocal);
+
+        rb.WakeUp();
+        rb.AddForceAtPosition(dir * impulse, hitPointWorld, ForceMode.Impulse);
     }
     
     private void StickRotation()
@@ -58,7 +73,7 @@ public class CueStick : NetworkBehaviour
         if (_mouse.scroll.magnitude <= 0)
             return;
         
-        float value = _mouse.scroll.value.y;
+        float value = _mouse.scroll.value.y * 0.5f;
         hittingPower = Mathf.Clamp(hittingPower + value, 0, maxPower);
         
         if (powerUI) powerUI.fillAmount = hittingPower / maxPower;

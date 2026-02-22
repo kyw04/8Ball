@@ -124,9 +124,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2894665422354703371}
   serializedVersion: 5
-  m_Mass: 10
+  m_Mass: 1
   m_LinearDamping: 0
-  m_AngularDamping: 0.05
+  m_AngularDamping: 0
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -155,7 +155,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 4208532314
+  GlobalObjectIdHash: 2527706270
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -187,6 +187,10 @@ MonoBehaviour:
   rollFrictionMu: 0.01
   slipThreshold: 0.03
   rollAlignStrength: 8
+  settleLinearSpeed: 0.04
+  settleRollSpinSpeed: 0.3
+  settleSideSpinSpeed: 0.2
+  settleLockTimeAfterShot: 0.12
 --- !u!114 &7233393730106507324
 MonoBehaviour:
   m_ObjectHideFlags: 0

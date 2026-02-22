@@ -245,8 +245,8 @@ MonoBehaviour:
   powerUI: {fileID: 0}
   target: {fileID: 0}
   stick: {fileID: 5023502829602750443}
-  hittingPower: 0
-  maxPower: 100
+  hittingPower: 40
+  maxPower: 40
 --- !u!1001 &715285411563255676
 PrefabInstance:
   m_ObjectHideFlags: 0

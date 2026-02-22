@@ -37,6 +37,7 @@ public class GameManager : NetworkBehaviour
         
         moveBalls = 0;
         cueStick.target = startBall;
+        cueStick.StickOnOff(true);
     }
     
     private void Update()
@@ -57,13 +58,13 @@ public class GameManager : NetworkBehaviour
     private IEnumerator StartEndTurn()
     {
         while (startBall.rb.linearVelocity.magnitude <= 0.1f) yield return null;
-        cueStick.enabled = false;
+        cueStick.StickOnOff(false);
         isTurnEnd = true;
     }
 
     private void NextTurn()
     {
-        cueStick.enabled = true;
+        cueStick.StickOnOff(true);
         NextTurnServerRpc();
     }
     
