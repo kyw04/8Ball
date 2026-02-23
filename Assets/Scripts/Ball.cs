@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 
 public class Ball : NetworkBehaviour
@@ -22,10 +23,12 @@ public class Ball : NetworkBehaviour
     private float _settleLockUntil = 0f;
     
     public Rigidbody rb { get; private set; }
+    public NetworkRigidbody netRb { get; private set; }
     
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+        netRb =  GetComponent<NetworkRigidbody>();
         
         rb.maxAngularVelocity = 100f;
 
@@ -35,6 +38,9 @@ public class Ball : NetworkBehaviour
 
     private void FixedUpdate()
     {
+        if (!IsServer)
+            return;
+        
         Vector3 n = Vector3.up;
         Vector3 v = rb.linearVelocity;
         Vector3 w = rb.angularVelocity;
@@ -53,7 +59,7 @@ public class Ball : NetworkBehaviour
             rb.angularVelocity = Vector3.zero;
             rb.Sleep();
 
-            GameManager.instance.RemoveMoveBall(index);
+            GameManager.instance.RemoveMovingBall(index);
             return;
         }
 
@@ -95,12 +101,12 @@ public class Ball : NetworkBehaviour
         }
     }
 
-    public void NotifyShot()
+    [Rpc(SendTo.Server)]
+    public void NotifyShotRpc()
     {
         _settleLockUntil = Time.time + settleLockTimeAfterShot;
         rb.WakeUp();
     }
-    
     
     private void OnCollisionEnter(Collision other)
     {
@@ -122,7 +128,8 @@ public class Ball : NetworkBehaviour
         }
         if (other.gameObject.CompareTag("Goal"))
         {
-            GameManager.instance.RemoveMoveBall(index);
+            GameManager.instance.RemoveMovingBall(index);
+            GameManager.instance.AddGoalBall(index);
             rb.Sleep();
             isGoal = true;
             gameObject.SetActive(false);
