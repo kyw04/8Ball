@@ -10,6 +10,7 @@ using Unity.Services.Authentication;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine.SceneManagement;
+using Random = System.Random;
 
 [RequireComponent(typeof(NetworkManager), typeof(UnityTransport))]
 public class RelayNetworkManager : MonoBehaviour
@@ -19,9 +20,17 @@ public class RelayNetworkManager : MonoBehaviour
     [SerializeField] private Button hostButton;
     [SerializeField] private Button joinButton;
     [SerializeField] private Button leaveButton;
+    [SerializeField] private TMP_InputField nicknameInput;
+    
+    [SerializeField] private GameObject defaultGroup;
+    [SerializeField] private GameObject joinGroup;
+    
     public int maxConnections;
-    public string targetSceneName = "InGameScene";
+    public string targetSceneName = "LobbyScene";
+    public string nickname;
 
+    public Allocation allocation;
+    
     private NetworkManager _networkManager;
     private UnityTransport _transport;
     private bool _servicesReady;
@@ -38,7 +47,6 @@ public class RelayNetworkManager : MonoBehaviour
             
             hostButton.onClick.AddListener(CreateHost);
             joinButton.onClick.AddListener(JoinByCode);
-            leaveButton.onClick.AddListener(LeaveServer);
 
             await EnsureServicesReadyAsync();
         }
@@ -48,14 +56,37 @@ public class RelayNetworkManager : MonoBehaviour
         }
     }
 
+    public void ClickMultiplayerButton()
+    {
+        defaultGroup.SetActive(false);
+        joinGroup.SetActive(true);
+        NicknameSetting();
+    }
+
+    public void CanvasGroupChanged(bool value)
+    {
+        defaultGroup.SetActive(value);
+        joinGroup.SetActive(!value);
+    }
+
+    private void NicknameSetting()
+    {
+        if (string.IsNullOrWhiteSpace(nicknameInput.text))
+            nickname = "unknown_player_" + UnityEngine.Random.Range(0, 999);
+        else
+            nickname = nicknameInput.text;
+    }
+    
     private async void CreateHost()
     {
         if (!_servicesReady) await EnsureServicesReadyAsync();
         if (!_servicesReady) return;
 
         try
-        {            
-            var allocation = await RelayService.Instance.CreateAllocationAsync(maxConnections);
+        {
+            NicknameSetting();
+            
+            allocation = await RelayService.Instance.CreateAllocationAsync(maxConnections);
             var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
             _transport.SetRelayServerData(allocation.ToRelayServerData(_connectionType));
@@ -108,13 +139,16 @@ public class RelayNetworkManager : MonoBehaviour
         }
     }
 
-    private void LeaveServer()
+    public void LeaveServer()
     {
+        Debug.Log("Leave Server");
         if (_networkManager.IsListening)
         {
             _networkManager.Shutdown();
         }
         if (joinCodeText) joinCodeText.text = "-";
+        
+        NetworkManager.Singleton.SceneManager.LoadScene("OutdoorsScene", LoadSceneMode.Single);
     }
     
     private async Task EnsureServicesReadyAsync()
