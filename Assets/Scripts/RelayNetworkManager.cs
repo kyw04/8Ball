@@ -27,7 +27,7 @@ public class RelayNetworkManager : MonoBehaviour
     
     public int maxConnections;
     public string targetSceneName = "LobbyScene";
-    public string nickname;
+    public PlayerData playerData;
 
     public Allocation allocation;
     
@@ -60,7 +60,7 @@ public class RelayNetworkManager : MonoBehaviour
     {
         defaultGroup.SetActive(false);
         joinGroup.SetActive(true);
-        NicknameSetting();
+        PlayerDataSetting();
     }
 
     public void CanvasGroupChanged(bool value)
@@ -69,12 +69,14 @@ public class RelayNetworkManager : MonoBehaviour
         joinGroup.SetActive(!value);
     }
 
-    private void NicknameSetting()
+    private void PlayerDataSetting()
     {
+        playerData.clientId = NetworkManager.Singleton.LocalClientId;
+        
         if (string.IsNullOrWhiteSpace(nicknameInput.text))
-            nickname = "unknown_player_" + UnityEngine.Random.Range(0, 999);
+            playerData.playerName = "unknown_player_" + UnityEngine.Random.Range(0, 999);
         else
-            nickname = nicknameInput.text;
+            playerData.playerName = nicknameInput.text;
     }
     
     private async void CreateHost()
@@ -84,7 +86,7 @@ public class RelayNetworkManager : MonoBehaviour
 
         try
         {
-            NicknameSetting();
+            PlayerDataSetting();
             
             allocation = await RelayService.Instance.CreateAllocationAsync(maxConnections);
             var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
