@@ -10,23 +10,22 @@ using Unity.Services.Authentication;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine.SceneManagement;
-using Random = System.Random;
 
 [RequireComponent(typeof(NetworkManager), typeof(UnityTransport))]
 public class RelayNetworkManager : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI joinCodeText;
     [SerializeField] private TMP_InputField joinCodeInput;
     [SerializeField] private Button hostButton;
     [SerializeField] private Button joinButton;
-    [SerializeField] private Button leaveButton;
     [SerializeField] private TMP_InputField nicknameInput;
-    
+
+    [SerializeField] private GameObject outdoorCanvas;
+    [SerializeField] private GameObject lobbyCanvas;
     [SerializeField] private GameObject defaultGroup;
     [SerializeField] private GameObject joinGroup;
-    
+
     public int maxConnections;
-    public string targetSceneName = "LobbyScene";
+    public string targetSceneName = "InGameScene";
     public PlayerData playerData;
 
     public Allocation allocation;
@@ -47,7 +46,6 @@ public class RelayNetworkManager : MonoBehaviour
             
             hostButton.onClick.AddListener(CreateHost);
             joinButton.onClick.AddListener(JoinByCode);
-
             await EnsureServicesReadyAsync();
         }
         catch (Exception e)
@@ -96,10 +94,9 @@ public class RelayNetworkManager : MonoBehaviour
             if (!_networkManager.StartHost())
                 throw new Exception("StartHost Failed");
 
-            if (joinCodeText) joinCodeText.text = joinCode;
             Debug.Log("Join Code: " + joinCode);
             
-            ChangeToGameScene();
+            ChangeCanvas();
         }
         catch (Exception e)
         {
@@ -107,9 +104,10 @@ public class RelayNetworkManager : MonoBehaviour
         }
     }
 
-    private void ChangeToGameScene()
+    private void ChangeCanvas()
     {
-        NetworkManager.Singleton.SceneManager.LoadScene(targetSceneName, LoadSceneMode.Single);
+        outdoorCanvas.SetActive(false);
+        lobbyCanvas.SetActive(true);
     }
     
     private async void JoinByCode()
@@ -148,9 +146,8 @@ public class RelayNetworkManager : MonoBehaviour
         {
             _networkManager.Shutdown();
         }
-        if (joinCodeText) joinCodeText.text = "-";
-        
-        NetworkManager.Singleton.SceneManager.LoadScene("OutdoorsScene", LoadSceneMode.Single);
+
+        ChangeCanvas();
     }
     
     private async Task EnsureServicesReadyAsync()
