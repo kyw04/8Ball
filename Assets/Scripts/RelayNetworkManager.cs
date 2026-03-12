@@ -47,6 +47,8 @@ public class RelayNetworkManager : MonoBehaviour
             hostButton.onClick.AddListener(CreateHost);
             joinButton.onClick.AddListener(JoinByCode);
             await EnsureServicesReadyAsync();
+            
+            _networkManager.OnClientConnectedCallback += PlayerDataSetting;
         }
         catch (Exception e)
         {
@@ -58,7 +60,6 @@ public class RelayNetworkManager : MonoBehaviour
     {
         defaultGroup.SetActive(false);
         joinGroup.SetActive(true);
-        PlayerDataSetting();
     }
 
     public void CanvasGroupChanged(bool value)
@@ -67,14 +68,16 @@ public class RelayNetworkManager : MonoBehaviour
         joinGroup.SetActive(!value);
     }
 
-    private void PlayerDataSetting()
+    private void PlayerDataSetting(ulong clientId)
     {
-        playerData.clientId = NetworkManager.Singleton.LocalClientId;
+        playerData.clientId = clientId;
         
         if (string.IsNullOrWhiteSpace(nicknameInput.text))
             playerData.playerName = "unknown_player_" + UnityEngine.Random.Range(0, 999);
         else
             playerData.playerName = nicknameInput.text;
+        
+        Debug.Log($"Player ID: {playerData.clientId},  Nickname: {playerData.playerName}");
     }
     
     private async void CreateHost()
@@ -84,8 +87,6 @@ public class RelayNetworkManager : MonoBehaviour
 
         try
         {
-            PlayerDataSetting();
-            
             allocation = await RelayService.Instance.CreateAllocationAsync(maxConnections);
             var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
@@ -96,7 +97,7 @@ public class RelayNetworkManager : MonoBehaviour
 
             Debug.Log("Join Code: " + joinCode);
             
-            ChangeCanvas();
+            SetCanvasActive(true);
         }
         catch (Exception e)
         {
@@ -104,10 +105,10 @@ public class RelayNetworkManager : MonoBehaviour
         }
     }
 
-    private void ChangeCanvas()
+    private void SetCanvasActive(bool onLobbyCanvas)
     {
-        outdoorCanvas.SetActive(false);
-        lobbyCanvas.SetActive(true);
+        outdoorCanvas.SetActive(!onLobbyCanvas);
+        lobbyCanvas.SetActive(onLobbyCanvas);
     }
     
     private async void JoinByCode()
@@ -132,6 +133,7 @@ public class RelayNetworkManager : MonoBehaviour
                 throw new Exception("StartClient Failed");
 
             Debug.Log("Client trying to connect...");
+            SetCanvasActive(true);
         }
         catch (Exception e)
         {
@@ -147,7 +149,19 @@ public class RelayNetworkManager : MonoBehaviour
             _networkManager.Shutdown();
         }
 
-        ChangeCanvas();
+        if (!_networkManager.IsHost)
+        {
+            LeaveAllClientRpc();
+        }
+        
+        SetCanvasActive(false);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void LeaveAllClientRpc()
+    {
+        SetCanvasActive(false);
+        Debug.Log("Leave All Client");
     }
     
     private async Task EnsureServicesReadyAsync()

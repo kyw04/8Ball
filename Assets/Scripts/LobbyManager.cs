@@ -1,4 +1,3 @@
-using System.Collections;
 using TMPro;
 using Unity.Collections;
 using UnityEngine.UI;
@@ -36,7 +35,6 @@ public class LobbyManager : NetworkBehaviour
             joinCode.Value = await RelayService.Instance.GetJoinCodeAsync(relayNetworkManager.allocation.AllocationId);
         }
 
-        hostButton.onClick.AddListener(() => AddPlayerListRpc(relayNetworkManager.playerData));
         startButton.onClick.AddListener(StartButtonClick);
         leaveButton.onClick.AddListener(() => OnClientDisconnected(relayNetworkManager.playerData.clientId));
         leaveButton.onClick.AddListener(relayNetworkManager.LeaveServer);
@@ -45,6 +43,7 @@ public class LobbyManager : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         playerDataList.OnListChanged += UpdateUI;
+        NetworkManager.Singleton.OnClientStarted += () => AddPlayerListRpc(relayNetworkManager.playerData);
     }
 
     public override void OnNetworkDespawn()
@@ -58,7 +57,7 @@ public class LobbyManager : NetworkBehaviour
             NetworkManager.Singleton.SceneManager.LoadScene("InGameScene", LoadSceneMode.Single);
     }
     
-    void OnClientDisconnected(ulong clientId)
+    private void OnClientDisconnected(ulong clientId)
     {
         for (int i = 0; i < playerDataList.Count; i++)
         {
@@ -73,6 +72,9 @@ public class LobbyManager : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void AddPlayerListRpc(PlayerData playerData)
     {
+        if (playerDataList.Contains(playerData))
+            return;
+        
         playerDataList.Add(playerData);
     }
 

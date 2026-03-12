@@ -1883,7 +1883,11 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   relayNetworkManager: {fileID: 2050713903}
   joinCodeText: {fileID: 7899103877557585458}
-  playerNameTexts: []
+  playerNameTexts:
+  - {fileID: 4545691874125034834}
+  - {fileID: 3671130698196518513}
+  - {fileID: 5273762652420972875}
+  - {fileID: 5775284242344223546}
   hostButton: {fileID: 570876134}
   startButton: {fileID: 4203135441936856922}
   leaveButton: {fileID: 6213755457227144019}
