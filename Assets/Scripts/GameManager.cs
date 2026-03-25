@@ -140,7 +140,6 @@ public class GameManager : NetworkBehaviour
         bool isLineGoal = (GoalBallsThisTurn & 0b1111111100000000) > 0;
         if ((isColorGoal && isLineGoal) || (!isColorGoal && !isLineGoal))
             return;
-
         isTargetColor.Value = isColorGoal;
         isFirstGoal.Value = false;
     }
@@ -148,6 +147,8 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void NextTurnServerRpc()
     {
+        isTargetColor.Value = !isTargetColor.Value;
+        Debug.Log(isTargetColor.Value);
         var connectedIds = NetworkManager.Singleton.ConnectedClientsIds;
         turn.Value = (turn.Value + 1) % connectedIds.Count;
         cueStick.NetworkObject.ChangeOwnership(connectedIds[turn.Value]);

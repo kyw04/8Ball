@@ -9,7 +9,6 @@ using Unity.Services.Core;
 using Unity.Services.Authentication;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
-using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(NetworkManager), typeof(UnityTransport))]
 public class RelayNetworkManager : MonoBehaviour
