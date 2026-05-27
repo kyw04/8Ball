@@ -5,7 +5,7 @@ using Unity.Collections;
 [Serializable]
 public struct PlayerData : INetworkSerializable, IEquatable<PlayerData>
 {
-    public ulong clientId;
+    public FixedString32Bytes clientId;
     public FixedString32Bytes playerName;
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer)
@@ -17,6 +17,6 @@ public struct PlayerData : INetworkSerializable, IEquatable<PlayerData>
 
     public bool Equals(PlayerData other)
     {
-        return clientId == other.clientId && playerName.Equals(other.playerName);
+        return clientId == other.clientId;
     }
 }

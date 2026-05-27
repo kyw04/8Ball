@@ -69,7 +69,7 @@ public class RelayNetworkManager : MonoBehaviour
 
     private void PlayerDataSetting(ulong clientId)
     {
-        playerData.clientId = clientId;
+        playerData.clientId = AuthenticationService.Instance.PlayerId;
         
         if (string.IsNullOrWhiteSpace(nicknameInput.text))
             playerData.playerName = "unknown_player_" + UnityEngine.Random.Range(0, 999);

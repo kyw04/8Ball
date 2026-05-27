@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using Unity.Collections;
 using UnityEngine.UI;
@@ -25,7 +26,7 @@ public class LobbyManager : NetworkBehaviour
         playerDataList =  new NetworkList<PlayerData>();
     }
 
-    private async void Start()
+    private async void OnServerStarted()
     {
         if (relayNetworkManager == null)
             Debug.LogError("Can't find RelayNetworkManager");
@@ -33,17 +34,25 @@ public class LobbyManager : NetworkBehaviour
         if (IsHost)
         {
             joinCode.Value = await RelayService.Instance.GetJoinCodeAsync(relayNetworkManager.allocation.AllocationId);
+            AddPlayerListRpc(relayNetworkManager.playerData);
         }
-
-        startButton.onClick.AddListener(StartButtonClick);
-        leaveButton.onClick.AddListener(() => OnClientDisconnected(relayNetworkManager.playerData.clientId));
-        leaveButton.onClick.AddListener(relayNetworkManager.LeaveServer);
     }
 
     public override void OnNetworkSpawn()
     {
         playerDataList.OnListChanged += UpdateUI;
-        NetworkManager.Singleton.OnClientStarted += () => AddPlayerListRpc(relayNetworkManager.playerData);
+        NetworkManager.Singleton.OnServerStarted += OnServerStarted;
+        NetworkManager.Singleton.OnClientConnectedCallback += (ulong id) =>
+        {
+            AddPlayerListRpc(relayNetworkManager.playerData);
+            
+            if (!IsHost)
+                startButton.gameObject.SetActive(false);
+            
+            startButton.onClick.AddListener(StartButtonClick);
+            leaveButton.onClick.AddListener(() => OnClientDisconnected(relayNetworkManager.playerData.clientId));
+            leaveButton.onClick.AddListener(relayNetworkManager.LeaveServer);
+        };
     }
 
     public override void OnNetworkDespawn()
@@ -57,7 +66,7 @@ public class LobbyManager : NetworkBehaviour
             NetworkManager.Singleton.SceneManager.LoadScene("InGameScene", LoadSceneMode.Single);
     }
     
-    private void OnClientDisconnected(ulong clientId)
+    private void OnClientDisconnected(FixedString32Bytes clientId)
     {
         for (int i = 0; i < playerDataList.Count; i++)
         {
