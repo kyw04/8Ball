@@ -266,7 +266,7 @@ public class GameManager : NetworkBehaviour
 
     public void RemoveMovingBall(int ballIndex)
     {
-        if (!isTurnEnd || (movingBalls & (ulong)1 << ballIndex) == 0)
+        if ((movingBalls & (ulong)1 << ballIndex) == 0)
             return;
 
         movingBalls &= ~((ulong)1 << ballIndex);
