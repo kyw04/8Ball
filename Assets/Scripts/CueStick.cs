@@ -9,9 +9,11 @@ public class CueStick : NetworkBehaviour
     public Ball target;
     public Transform stick;
     public GameObject model;
-    
+
     public float hittingPower;
     public float maxPower;
+
+    [SerializeField] private float scrollPowerScale = 0.5f;
 
     private Mouse _mouse;
 
@@ -19,11 +21,14 @@ public class CueStick : NetworkBehaviour
     {
         _mouse = Mouse.current;
     }
-    
+
     private void Update()
     {
+        if (target == null)
+            return;
+
         transform.position = target.transform.position;
-        
+
         if (!IsOwner)
             return;
 
@@ -33,10 +38,10 @@ public class CueStick : NetworkBehaviour
         }
 
         StickPowerUpdater();
-        
+
         if (_mouse.rightButton.wasPressedThisFrame)
         {
-            TryShootRequest(target.rb, stick.forward, hittingPower,  Vector3.zero);
+            TryShootRequest(target.rb, stick.forward, hittingPower, Vector3.zero);
         }
     }
 
@@ -45,7 +50,7 @@ public class CueStick : NetworkBehaviour
     {
         model.SetActive(value);
     }
-    
+
     private void TryShootRequest(Rigidbody rb, Vector3 cueDir, float impulse, Vector3 hitOffsetLocal)
     {
         Vector3 dir = cueDir.normalized;
@@ -53,7 +58,7 @@ public class CueStick : NetworkBehaviour
 
         RequestShootRpc(new NetworkObjectReference(target.NetworkObject), dir, impulse, hitPointWorld);
     }
-    
+
     [Rpc(SendTo.Server)]
     private void RequestShootRpc(NetworkObjectReference ballRef, Vector3 cueDir, float impulse, Vector3 localHitOffset)
     {
@@ -88,18 +93,23 @@ public class CueStick : NetworkBehaviour
 
         GameManager.instance.EndTurn();
     }
-    
+
     private void StickRotation()
     {
         Ray ray = Camera.main.ScreenPointToRay(_mouse.position.ReadValue());
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            Vector3 pos = transform.position;
+            Vector3 pivot = transform.position;       // 공 위치(스틱이 회전하는 중심)
             Vector3 worldPoint = hit.point;
-            worldPoint.y = stick.position.y;
-            Vector3 lookDir = pos - (worldPoint - pos).normalized;
-            
-            stick.LookAt(lookDir);
+            worldPoint.y = stick.position.y;          // 높이를 스틱 평면에 맞춤
+
+            // 마우스 지점에서 공 쪽으로 향하는 방향(= 공에서 마우스 반대쪽을 겨냥)
+            Vector3 aimDir = pivot - worldPoint;
+            aimDir.y = 0f;
+            if (aimDir.sqrMagnitude < 0.0001f)
+                return;
+
+            stick.rotation = Quaternion.LookRotation(aimDir.normalized, Vector3.up);
         }
     }
 
@@ -107,10 +117,10 @@ public class CueStick : NetworkBehaviour
     {
         if (_mouse.scroll.magnitude <= 0)
             return;
-        
-        float value = _mouse.scroll.value.y * 0.5f;
+
+        float value = _mouse.scroll.value.y * scrollPowerScale;
         hittingPower = Mathf.Clamp(hittingPower + value, 0, maxPower);
-        
+
         if (powerUI) powerUI.fillAmount = hittingPower / maxPower;
     }
 }

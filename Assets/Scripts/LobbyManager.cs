@@ -1,4 +1,3 @@
-using System;
 using TMPro;
 using Unity.Collections;
 using UnityEngine.UI;
@@ -34,7 +33,7 @@ public class LobbyManager : NetworkBehaviour
         if (IsHost)
         {
             joinCode.Value = await RelayService.Instance.GetJoinCodeAsync(relayNetworkManager.allocation.AllocationId);
-            AddPlayerListRpc(relayNetworkManager.playerData);
+            UpdateUI(new NetworkListEvent<PlayerData>());
         }
     }
 
