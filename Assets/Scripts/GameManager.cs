@@ -121,6 +121,7 @@ public class GameManager : NetworkBehaviour
     public void EndTurn()
     {
         AddMoveBall(0);
+        cueStick.StickOnOffRpc(false);
         StartCoroutine(StartEndTurn());
     }
 
@@ -133,7 +134,6 @@ public class GameManager : NetworkBehaviour
         while (startBall.rb.linearVelocity.magnitude >= settleVelocityThreshold)
             yield return null;
 
-        cueStick.StickOnOffRpc(false);
         isTurnEnd = true;
     }
 

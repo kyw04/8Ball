@@ -118,8 +118,8 @@ public class RelayNetworkManager : MonoBehaviour
 
     private void SetCanvasActive(bool onLobbyCanvas)
     {
-        outdoorCanvas.SetActive(!onLobbyCanvas);
-        lobbyCanvas.SetActive(onLobbyCanvas);
+        if (outdoorCanvas != null) outdoorCanvas.SetActive(!onLobbyCanvas);
+        if (lobbyCanvas != null) lobbyCanvas.SetActive(onLobbyCanvas);
     }
     
     private async void JoinByCode()
