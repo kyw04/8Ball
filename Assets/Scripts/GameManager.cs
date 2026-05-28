@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -15,9 +17,14 @@ public class GameManager : NetworkBehaviour
     public Transform whiteBallPoint;
     public Transform blackBallPoint;
 
+    [SerializeField] private TextMeshProUGUI currentPlayerText;
+
     public NetworkVariable<int> turn = new NetworkVariable<int>(0);
     public NetworkVariable<bool> isTargetColor = new NetworkVariable<bool>();
     private NetworkVariable<bool> isFirstGoal = new NetworkVariable<bool>(true);
+
+    // Server-only: maps NGO clientId → player name
+    private readonly Dictionary<ulong, FixedString32Bytes> _playerNames = new();
 
     public ulong goalBalls;
 
@@ -30,6 +37,18 @@ public class GameManager : NetworkBehaviour
 
     // 흰 공이 멈추기를 기다리기 위한 임계값
     [SerializeField] private float settleVelocityThreshold = 0.1f;
+
+    public override void OnNetworkSpawn()
+    {
+        var relayManager = FindAnyObjectByType<RelayNetworkManager>();
+        if (relayManager != null)
+            RegisterPlayerRpc(relayManager.playerData);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        _playerNames.Clear();
+    }
 
     private void Awake()
     {
@@ -197,6 +216,38 @@ public class GameManager : NetworkBehaviour
         var connectedIds = NetworkManager.Singleton.ConnectedClientsIds;
         turn.Value = (turn.Value + 1) % connectedIds.Count;
         cueStick.NetworkObject.ChangeOwnership(connectedIds[turn.Value]);
+        BroadcastCurrentPlayer();
+    }
+
+    // Collect each client's player name on game start
+    [Rpc(SendTo.Server)]
+    private void RegisterPlayerRpc(PlayerData data, RpcParams rpcParams = default)
+    {
+        _playerNames[rpcParams.Receive.SenderClientId] = data.playerName;
+
+        // Broadcast once all connected players have registered
+        if (_playerNames.Count >= NetworkManager.Singleton.ConnectedClientsIds.Count)
+            BroadcastCurrentPlayer();
+    }
+
+    private void BroadcastCurrentPlayer()
+    {
+        var connectedIds = NetworkManager.Singleton.ConnectedClientsIds;
+        if (turn.Value >= connectedIds.Count) return;
+
+        ulong currentId = connectedIds[turn.Value];
+        FixedString32Bytes name = _playerNames.TryGetValue(currentId, out var n)
+            ? n
+            : (FixedString32Bytes)$"Player {turn.Value + 1}";
+
+        SetCurrentPlayerRpc(name);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void SetCurrentPlayerRpc(FixedString32Bytes playerName)
+    {
+        if (currentPlayerText == null) return;
+        currentPlayerText.text = playerName.Value;
     }
 
     public void AddGoalBall(int ballIndex)
