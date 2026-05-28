@@ -67,8 +67,11 @@ public class Ball : NetworkBehaviour
             wPlane.magnitude < settleRollSpinSpeed &&
             Mathf.Abs(wNormal) < settleSideSpinSpeed)
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            if (!rb.isKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
             rb.Sleep();
 
             GameManager.instance.RemoveMovingBall(index);
@@ -105,7 +108,8 @@ public class Ball : NetworkBehaviour
             rb.AddTorque(frictionTorque, ForceMode.Force);
         }
 
-        if (rb.linearVelocity.magnitude < hardStopLinearSpeed &&
+        if (!rb.isKinematic &&
+            rb.linearVelocity.magnitude < hardStopLinearSpeed &&
             rb.angularVelocity.magnitude < hardStopAngularSpeed)
         {
             rb.linearVelocity = Vector3.zero;

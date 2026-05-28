@@ -92,7 +92,7 @@ public class GameManager : NetworkBehaviour
         GoalBallsThisTurn = 0;
         MoveBallsThisTurn = 0;
 
-        // cueStick.target = startBall;
+        cueStick.target = startBall;
         cueStick.StickOnOffRpc(true);
     }
 
