@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Collections;
@@ -23,6 +24,8 @@ public class LobbyManager : NetworkBehaviour
     // Server-only: maps NGO ulong clientId → PlayerData.clientId (UGS string)
     private readonly Dictionary<ulong, FixedString32Bytes> _ngoToUgsId = new();
 
+    private Action<ulong> _onClientConnected;
+
     private void Awake()
     {
         joinCode = new NetworkVariable<FixedString32Bytes>();
@@ -47,9 +50,9 @@ public class LobbyManager : NetworkBehaviour
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
 
         if (IsServer)
-            NetworkManager.Singleton.OnClientDisconnectedCallback += OnClientDisconnectedServer;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectedServer;
 
-        NetworkManager.Singleton.OnClientConnectedCallback += (ulong id) =>
+        _onClientConnected = (ulong id) =>
         {
             AddPlayerListRpc(relayNetworkManager.playerData);
 
@@ -63,6 +66,7 @@ public class LobbyManager : NetworkBehaviour
             leaveButton.onClick.RemoveAllListeners();
             leaveButton.onClick.AddListener(relayNetworkManager.LeaveServer);
         };
+        NetworkManager.Singleton.OnClientConnectedCallback += _onClientConnected;
     }
 
     public override void OnNetworkDespawn()
@@ -70,7 +74,11 @@ public class LobbyManager : NetworkBehaviour
         playerDataList.OnListChanged -= UpdateUI;
 
         if (IsServer)
-            NetworkManager.Singleton.OnClientDisconnectedCallback -= OnClientDisconnectedServer;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectedServer;
+
+        NetworkManager.Singleton.OnClientConnectedCallback -= _onClientConnected;
+        NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
+        _onClientConnected = null;
     }
 
     // Fired on server when any client disconnects (voluntary or involuntary)
