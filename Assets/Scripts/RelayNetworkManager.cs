@@ -48,11 +48,23 @@ public class RelayNetworkManager : MonoBehaviour
             await EnsureServicesReadyAsync();
             
             _networkManager.OnClientConnectedCallback += PlayerDataSetting;
+            _networkManager.OnClientStopped += OnNetworkStopped;
         }
         catch (Exception e)
         {
             Debug.LogError(e);
         }
+    }
+
+    private void OnDestroy()
+    {
+        if (_networkManager != null)
+            _networkManager.OnClientStopped -= OnNetworkStopped;
+    }
+
+    private void OnNetworkStopped(bool wasServer)
+    {
+        SetCanvasActive(false);
     }
 
     public void ClickMultiplayerButton()
