@@ -18,6 +18,7 @@ public class GameManager : NetworkBehaviour
     public Transform blackBallPoint;
 
     [SerializeField] private TextMeshProUGUI currentPlayerText;
+    [SerializeField] private TextMeshProUGUI winnerText;
 
     public NetworkVariable<int> turn = new NetworkVariable<int>(0);
     public NetworkVariable<bool> isTargetColor = new NetworkVariable<bool>();
@@ -113,9 +114,11 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    private void GameEndEveryoneRpc()
+    private void GameEndEveryoneRpc(FixedString32Bytes winnerName)
     {
-
+        if (winnerText == null) return;
+        winnerText.transform.parent.gameObject.SetActive(true);
+        winnerText.text = $"{winnerName.Value} 승리!";
     }
 
     public void EndTurn()
@@ -142,8 +145,25 @@ public class GameManager : NetworkBehaviour
         // 8번(검은) 공이 들어갔으면 게임 종료
         if ((goalBalls & ((ulong)1 << 8)) > 0)
         {
-            Debug.Log("GameEnd");
-            GameEndEveryoneRpc();
+            // 현재 플레이어가 자신의 공을 모두 넣었고 파울이 없으면 승리
+            const ulong solidMask  = 0b11111110;          // 비트 1-7 (단색)
+            const ulong stripeMask = 0b1111111000000000;  // 비트 9-15 (줄무늬)
+            bool clearedOwn = !isFirstGoal.Value && (
+                isTargetColor.Value  ? (goalBalls & solidMask)  == solidMask
+                                     : (goalBalls & stripeMask) == stripeMask);
+            bool foul = startBall.isGoal;
+            bool currentWins = clearedOwn && !foul;
+
+            var ids = NetworkManager.Singleton.ConnectedClientsIds;
+            ulong winnerId = currentWins
+                ? ids[turn.Value]
+                : ids[(turn.Value + 1) % ids.Count];
+
+            FixedString32Bytes winnerName = _playerNames.TryGetValue(winnerId, out var n)
+                ? n : (FixedString32Bytes)$"Player {turn.Value + 1}";
+
+            Debug.Log($"GameEnd - winner: {winnerName}");
+            GameEndEveryoneRpc(winnerName);
             return;
         }
 
