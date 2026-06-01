@@ -11,11 +11,11 @@ public class Ball : NetworkBehaviour
     public float radius = 0.028575f;
 
     [Header("Friction")]
-    public float rollingFrictionMu = 0.05f;   // 롤링 저항
+    public float rollingFrictionMu = 0.1f;    // 롤링 저항 (높을수록 빨리 멈춤)
     public float slidingFrictionMu = 0.2f;    // 슬라이딩 마찰 (충돌 후 미끄러짐→굴림 전환)
 
     [Header("Settle")]
-    public float settleLinearSpeed = 0.02f;
+    public float settleLinearSpeed = 0.05f;
     public float settleLockTimeAfterShot = 0.12f;
 
     [Header("Collision")]

@@ -280,9 +280,9 @@ MonoBehaviour:
   index: 3
   isGoal: 0
   radius: 0.028575
-  rollingFrictionMu: 0.05
+  rollingFrictionMu: 0.1
   slidingFrictionMu: 0.2
-  settleLinearSpeed: 0.02
+  settleLinearSpeed: 0.05
   settleLockTimeAfterShot: 0.12
   wallRestitution: 0.75
   ballRestitution: 0.95
