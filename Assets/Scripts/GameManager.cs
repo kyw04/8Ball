@@ -4,6 +4,7 @@ using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(NetworkObject))]
 public class GameManager : NetworkBehaviour
@@ -19,6 +20,8 @@ public class GameManager : NetworkBehaviour
 
     [SerializeField] private TextMeshProUGUI currentPlayerText;
     [SerializeField] private TextMeshProUGUI winnerText;
+    [SerializeField] private Button replayButton;
+    [SerializeField] private TextMeshProUGUI replayStatusText;
 
     public NetworkVariable<int> turn = new NetworkVariable<int>(0);
     public NetworkVariable<bool> isTargetColor = new NetworkVariable<bool>();
@@ -26,6 +29,7 @@ public class GameManager : NetworkBehaviour
 
     // Server-only: maps NGO clientId → player name
     private readonly Dictionary<ulong, FixedString32Bytes> _playerNames = new();
+    private readonly HashSet<ulong> _replayVotes = new();
 
     public ulong goalBalls;
 
@@ -95,6 +99,8 @@ public class GameManager : NetworkBehaviour
 
         cueStick.target = startBall;
         cueStick.StickOnOffRpc(true);
+
+        replayButton?.onClick.AddListener(OnReplayButtonClick);
     }
 
     private void SetPositionBall(int index, Transform pos)
@@ -119,6 +125,89 @@ public class GameManager : NetworkBehaviour
         if (winnerText == null) return;
         winnerText.transform.parent.gameObject.SetActive(true);
         winnerText.text = $"WINNER: {winnerName.Value}!";
+        if (replayStatusText != null) replayStatusText.text = "0 / 2 Ready";
+        if (replayButton != null) replayButton.interactable = true;
+        if (IsServer) _replayVotes.Clear();
+    }
+
+    // ── 다시하기 ──────────────────────────────────────────
+    public void OnReplayButtonClick()
+    {
+        replayButton.interactable = false;
+        RequestReplayRpc();
+    }
+
+    [Rpc(SendTo.Server)]
+    private void RequestReplayRpc(RpcParams rpc = default)
+    {
+        _replayVotes.Add(rpc.Receive.SenderClientId);
+        int total = NetworkManager.Singleton.ConnectedClientsIds.Count;
+        UpdateReplayStatusRpc(_replayVotes.Count, total);
+
+        if (_replayVotes.Count >= total)
+        {
+            _replayVotes.Clear();
+            ResetGameRpc();
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void UpdateReplayStatusRpc(int voted, int total)
+    {
+        if (replayStatusText != null)
+            replayStatusText.text = $"{voted} / {total} Ready";
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void ResetGameRpc()
+    {
+        // 모든 클라이언트: 승자 패널 숨기고 버튼 초기화
+        if (winnerText != null)
+            winnerText.transform.parent.gameObject.SetActive(false);
+        if (replayButton != null) replayButton.interactable = true;
+        if (replayStatusText != null) replayStatusText.text = "";
+
+        if (!IsServer) return;
+
+        // 서버: 게임 상태 초기화
+        goalBalls = 0;
+        movingBalls = 0;
+        GoalBallsThisTurn = 0;
+        MoveBallsThisTurn = 0;
+        isTurnEnd = false;
+        isFirstGoal.Value = true;
+
+        // 포켓된 공 복원
+        foreach (var ball in balls)
+        {
+            if (!ball.gameObject.activeSelf)
+            {
+                ball.isGoal = false;
+                ball.gameObject.SetActive(true);
+            }
+            ball.rb.linearVelocity = Vector3.zero;
+            ball.rb.angularVelocity = Vector3.zero;
+        }
+
+        // 공 위치 재배치
+        SetPositionBall(0, whiteBallPoint);
+        SetPositionBall(8, blackBallPoint);
+        var positions = new List<Transform>(startPoints);
+        for (int i = 0; i < startPoints.Length; i++)
+        {
+            int posIdx = Random.Range(0, positions.Count);
+            int idx = i + 1;
+            if (idx == 8) idx = 15;
+            SetPositionBall(idx, positions[posIdx]);
+            positions.RemoveAt(posIdx);
+        }
+
+        // 턴 초기화 → 플레이어 0부터 시작
+        turn.Value = 0;
+        cueStick.NetworkObject.ChangeOwnership(NetworkManager.Singleton.ConnectedClientsIds[0]);
+        cueStick.target = startBall;
+        cueStick.StickOnOffRpc(true);
+        BroadcastCurrentPlayer();
     }
 
     public void EndTurn()
