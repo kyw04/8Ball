@@ -118,7 +118,7 @@ public class GameManager : NetworkBehaviour
     {
         if (winnerText == null) return;
         winnerText.transform.parent.gameObject.SetActive(true);
-        winnerText.text = $"{winnerName.Value} 승리!";
+        winnerText.text = $"WINNER: {winnerName.Value}!";
     }
 
     public void EndTurn()
