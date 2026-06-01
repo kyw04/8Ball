@@ -22,6 +22,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI winnerText;
     [SerializeField] private Button replayButton;
     [SerializeField] private TextMeshProUGUI replayStatusText;
+    [SerializeField] private Button exitButton;
 
     public NetworkVariable<int> turn = new NetworkVariable<int>(0);
     public NetworkVariable<bool> isTargetColor = new NetworkVariable<bool>();
@@ -101,6 +102,7 @@ public class GameManager : NetworkBehaviour
         cueStick.StickOnOffRpc(true);
 
         replayButton?.onClick.AddListener(OnReplayButtonClick);
+        exitButton?.onClick.AddListener(OnExitButtonClick);
     }
 
     private void SetPositionBall(int index, Transform pos)
@@ -127,6 +129,7 @@ public class GameManager : NetworkBehaviour
         winnerText.text = $"WINNER: {winnerName.Value}!";
         if (replayStatusText != null) replayStatusText.text = "0 / 2 Ready";
         if (replayButton != null) replayButton.interactable = true;
+        if (exitButton != null) exitButton.interactable = true;
         if (IsServer) _replayVotes.Clear();
     }
 
@@ -208,6 +211,37 @@ public class GameManager : NetworkBehaviour
         cueStick.target = startBall;
         cueStick.StickOnOffRpc(true);
         BroadcastCurrentPlayer();
+    }
+
+    // ── 나가기 ──────────────────────────────────────────
+    public void OnExitButtonClick()
+    {
+        if (exitButton != null) exitButton.interactable = false;
+        RequestExitRpc();
+    }
+
+    [Rpc(SendTo.Server)]
+    private void RequestExitRpc()
+    {
+        StartCoroutine(ExitGameCoroutine());
+    }
+
+    private IEnumerator ExitGameCoroutine()
+    {
+        // 클라이언트들에게 먼저 로비 복귀 신호 전송
+        ReturnToLobbyClientRpc();
+        // 메시지 전달 보장 후 서버도 종료
+        yield return new WaitForSeconds(0.1f);
+        NetworkManager.Singleton.Shutdown();
+        UnityEngine.SceneManagement.SceneManager.LoadScene("OutdoorsScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
+    }
+
+    [Rpc(SendTo.NotServer)]
+    private void ReturnToLobbyClientRpc()
+    {
+        // 클라이언트: 네트워크 종료 후 로비 씬으로 직접 이동
+        NetworkManager.Singleton.Shutdown();
+        UnityEngine.SceneManagement.SceneManager.LoadScene("OutdoorsScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
     }
 
     public void EndTurn()
