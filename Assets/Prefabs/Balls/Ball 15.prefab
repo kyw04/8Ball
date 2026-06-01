@@ -279,12 +279,11 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   index: 15
   isGoal: 0
-  radius: 0.5
-  slideFrictionMu: 0.2
-  rollFrictionMu: 0.01
-  slipThreshold: 0.03
-  rollAlignStrength: 8
-  settleLinearSpeed: 0.04
-  settleRollSpinSpeed: 0.3
-  settleSideSpinSpeed: 0.2
+  radius: 0.028575
+  rollingFrictionMu: 0.05
+  slidingFrictionMu: 0.2
+  settleLinearSpeed: 0.02
   settleLockTimeAfterShot: 0.12
+  wallRestitution: 0.75
+  ballRestitution: 0.95
+  ballCollisionLockTime: 0.08
